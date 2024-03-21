@@ -1,0 +1,82 @@
+# fly.toml app configuration file generated for bianchidotdev-git on 2024-03-16T17:36:15-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'bianchidotdev-git'
+primary_region = 'ord'
+kill_signal = "SIGINT"
+kill_timeout = "10s"
+
+[build]
+  image = "charmcli/soft-serve"
+
+# Mount volume
+[[mounts]]
+source = "data"
+destination = "/data"
+
+# Environment variables
+[env]
+SOFT_SERVE_DATA_PATH = "/data"
+SOFT_SERVE_NAME = "bianchidotdev-git"
+SOFT_SERVE_INITIAL_ADMIN_KEYS = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOxN58yRjg+8PNAcgCQzM26K9LLf8nH4J1PEqzXLGhQ5"
+SOFT_SERVE_SSH_PUBLIC_URL = "ssh://git.bianchi.dev"
+SOFT_SERVE_HTTP_PUBLIC_URL = "https://git.bianchi.dev"
+SOFT_SERVE_GIT_LISTEN_ADDR = "0.0.0.0:9418"
+SOFT_SERVE_SSH_LISTEN_ADDR = "0.0.0.0:2222"
+SOFT_SERVE_HTTP_LISTEN_ADDR = "0.0.0.0:23232"
+
+# Prometheus
+[[services]]
+protocol = "tcp"
+internal_port = 23233
+
+[[services.ports]]
+port = 9090
+
+[services.concurrency]
+type = "connections"
+soft_limit = 25
+hard_limit = 50
+
+# Git
+[[services]]
+protocol = "tcp"
+internal_port = 9418
+
+[[services.ports]]
+port = 9418
+
+[services.concurrency]
+type = "connections"
+soft_limit = 25
+hard_limit = 50
+
+# SSH
+[[services]]
+protocol = "tcp"
+internal_port = 2222
+
+[services.concurrency]
+type = "connections"
+soft_limit = 25
+hard_limit = 50
+
+[[services.ports]]
+port = 22
+
+# HTTP/HTTPS
+[http_service]
+internal_port = 23232
+force_https = true
+
+[http_service.concurrency]
+type = "requests"
+soft_limit = 75
+hard_limit = 100
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = "256mb"
+  cpus = 1
